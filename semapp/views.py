@@ -1,36 +1,34 @@
 from django.shortcuts import render    
 from .forms import UploadFileForm   
-import pandas as pd
-from django.http import HttpResponse
+from django.http import HttpResponse, FileResponse
 from .adgroups_builder import adgroups_builder
-from django.views.static import serve 
-import os
-    
+#from django.views.static import serve 
+from django.contrib.auth.decorators import login_required
+
+@login_required  
 def build_adgroups(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            #similarity_threshold = form.cleaned_data['similarity_threshold']
-            adgroups_builder(uploaded_file = request.FILES['file'], 
+            # record session
+            request.session['similarity_threshold'] = form.cleaned_data['similarity_threshold']
+            request.session['number_of_adgroups'] = form.cleaned_data['number_of_adgroups']
+            request.session['max_number_keywords'] = form.cleaned_data['max_number_keywords']
+            request.session['file_name'] = request.FILES['file'].name
+                        
+            session = adgroups_builder(uploaded_file = request.FILES['file'], 
                      similarity_clusters = form.cleaned_data['similarity_threshold'], 
                      number_of_clusters = form.cleaned_data['number_of_adgroups'], 
-                     number_of_kw_per_adgroup = form.cleaned_data['max_number_keywords'])
-            file = open("./media/output.xlsx", 'rb') 
-            response = HttpResponse(content=file)
-            response['Content-Type'] = 'application/xlsx'
-            response['Content-Disposition'] = 'attachment; filename="%s.xlsx"' \
-                                              % 'output'            
-            return serve_file(filepath)
-            #return serve(request, os.path.basename(filepath),os.path.dirname(filepath))
+                     number_of_kw_per_adgroup = form.cleaned_data['max_number_keywords'],
+                     request=request)
+            
+            request.session['end_adgroups_builder'] = True
+            
+            # returns output
+            filename = "./media/output.xlsx"
+            return FileResponse(open(filename, 'rb'))
+            
     else:
         form = UploadFileForm()
+        request.session['visited_build_adgroups'] = True
         return render(request, 'semapp/upload.html', {'form': form})
-    
-
-def serve_file(file_path):
-    file = open(file_path, 'rb')
-    response = HttpResponse(content=file)
-    response['Content-Type'] = 'application/xlsx'
-    response['Content-Disposition'] = 'attachment; filename="%s.xlsx"' \
-                                      % 'whatever'
-    return response

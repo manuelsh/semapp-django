@@ -18,10 +18,12 @@ from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
 from semapp import views as semapp_views
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     #path('semapp/', include('semapp.urls')),
     path('admin/', admin.site.urls),
 #    path('', semapp_views.UploadView.as_view(), name='semapp'),
-    path('semapp/', include('semapp.urls'))
+    path('semapp/', include('semapp.urls')),
+    path('accounts/', include('django.contrib.auth.urls')),
     ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

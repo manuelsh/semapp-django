@@ -18,9 +18,13 @@ from .functions import pipeline
 def adgroups_builder(uploaded_file, 
                      similarity_clusters, 
                      number_of_clusters, 
-                     number_of_kw_per_adgroup):
+                     number_of_kw_per_adgroup,
+                     request):
 
     search_terms_df = pd.read_excel(uploaded_file)
+    
+    request.session['file_size'] = len(search_terms_df)
+    
     search_terms_columns = search_terms_df.columns
     keywords_column = 'Keyword'
     volumn_column = 'Volume'
@@ -51,7 +55,8 @@ def adgroups_builder(uploaded_file,
                                                create_embedding_dataset = True)
     end = time.time()
     
-    # Prepare file to be downloaded™
+    # Prepare file to be downloaded
     results_output = results_output.drop(columns='embedding_average') 
     results_output.to_excel("./media/output.xlsx", index = False,  encoding = 'UTF-16',sheet_name='Ad_groups') 
-
+    
+    return request
