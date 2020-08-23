@@ -1,0 +1,13 @@
+<div style="padding:40px;margin:40px;border:1px solid #ccc">
+        <h1> Adquity </h1>
+	<h2> Ad groups builder </h2>
+	<p>Upload your excel file and select your options to autogenerate ad groups. </p>
+	<p>The excel file should contain two columns, one named 'keyword', with the 
+	list of keywords, and another  named 'volume' with the volume of the corresponding
+	keyword.</p>
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">Submit</button>
+    </form>
+</div>
