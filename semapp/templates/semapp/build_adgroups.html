@@ -1,0 +1,31 @@
+{% extends 'base.html'%}
+{% block content %}
+<title>Adquity - Ad group builder</title>
+
+<ul class="nav nav-tabs" role="navigation" >
+    <li class="nav-item">
+        <a class="nav-link active" href="{% url 'build_adgroups'%}">Ad groups builder</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link " href="{% url 'autobuilder'%}">Autobuilder</a>
+    </li>
+</ul>
+
+<h2  class="display-4"> Ad groups builder </h2>
+<p class="lead">Use the ad groups builder to automatically group a large set of keywords.</p>
+<hr class="my-4">
+<p>Upload your excel file and select your options to autogenerate ad groups. </p>
+<p>The excel file should contain two columns, one named 'keyword', with the 
+list of keywords, and another  named 'volume' with the volume of the corresponding
+keyword.</p>
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.as_ul }}
+    
+
+</form>
+<br/>
+<p><button type="submit" class="btn btn-primary">Submit</button></p>
+
+
+{% endblock %}

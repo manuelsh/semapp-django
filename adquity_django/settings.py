@@ -105,7 +105,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LOGIN_REDIRECT_URL = '/semapp/'
+LOGIN_REDIRECT_URL = '/semapp/adgroups'
 
 
 # Internationalization

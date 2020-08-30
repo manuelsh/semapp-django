@@ -1,0 +1,31 @@
+{% extends 'base.html'%}
+{% block content %}
+
+<title>Adquity - Autobuilder</title>
+
+<ul class="nav nav-tabs" role="navigation" >
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'build_adgroups'%}">Ad groups builder</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link active" href="{% url 'autobuilder'%}">Autobuilder</a>
+    </li>
+</ul>
+
+
+<h2  class="display-4"> Autobuilder </h2>
+<p class="lead">Use the autobuilder to add keywords to your ad groups automatically.</p>
+<hr class="my-4">
+<p>Upload your keywords and adgroups in excel files. </p>
+<p>Each excel file should contain only one column with the keywords or the adgroups.</p>
+<div class="form-group">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_ul }}
+        <br/>
+        <p><button type="submit" class="btn btn-primary">Submit</button></p>
+    </form>
+</div>
+
+
+{% endblock %}

@@ -20,9 +20,9 @@ from scipy.spatial import distance
 # from text_processing import *
 
 
-def create_model(df , column = 'Keyword'):
+def create_model(series):
     with open('./media/output.txt', 'w') as f:
-        f.write(df[column].str.cat(sep='\n'))
+        f.write(series.str.cat(sep='\n'))
     model = train_unsupervised('./media/output.txt', epoch = 1000 )
     os.remove('./media/output.txt')
     return model
@@ -93,8 +93,6 @@ def create_embedding(data_set, keywords_column, model):
     data_set['embedding_average'] =  data_set[keywords_column].apply(lambda x: average_over_terms(x, model))
     return data_set
 
-
-
 def clean_embedding(data_set):
     data_set = data_set[ ~data_set['embedding_average'].isnull()]
     return data_set
@@ -102,45 +100,17 @@ def clean_embedding(data_set):
 def cos_sim(a, b):
     # return 1 - spatial.distance.cosine(a, b)
     return dot(a, b)/(norm(a)*norm(b))
- 
-
-def load_data(data_file):
-    data = pd.read_excel(data_file)
-    return data
 
 
-# def get_table_download_link(df, file_name):
-#     """Generates a link allowing the data in a given panda dataframe to be downloaded
-#     in:  dataframe
-#     out: href string
-#     """
-#     if 'embedding_average' in df.columns:
-#         df = df.drop(columns='embedding_average')
-#     # df = results_output.drop(columns='embedding_average')
-#     # csv = df.to_csv(index=False)
-#     # b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
-#     # href = f'<a href="data:file/csv;base64,{encoded}">Download Excel File</a> (right-click and save as &lt;some_name&gt;.csv)'
-#     # href = f'<a href="data:file/csv;base64,{b64}">Download CSV File</a> (right-click and save as &lt;some_name&gt;.csv)'
-#     towrite = io.BytesIO()
-#     df.to_excel(towrite,index = False,  encoding = 'UTF-8')  # write to BytesIO buffer
-#     towrite.seek(0)  # reset pointer
-#     encoded = base64.b64encode(towrite.read()).decode()  # encoded object
-#     href = f'<a href="data:file/csv;base64,{encoded}" download ="{file_name}">Download Excel File</a> (right-click and save as &lt;some_name&gt;.csv)'
-#     st.markdown(href, unsafe_allow_html=True)
+def ad_group_assignment(data_subset):
 
+    list_distances = 1 - distance.cdist(data_subset['embedding_average'].tolist()
+                                            , ad_groups_clusters_centers['embedding_average'].tolist()
+                                                , 'cosine')
 
-    
-# def save_result(data_set , RESULT_FILE_NAME =  "ad_groups.xlsx", categories = False):
-#         if 'embedding_average' in data_set.columns:
-#             data_set = data_set.drop(columns='embedding_average')
-#         data_set = data_set.sort_values(by='Ad_group_number' )
-#         if categories:
-#             data_set = data_set[['Keyword','Ad_group_name','Ad_group_number','sub_category' , 'Volume']] 
-#         else:
-#             data_set = data_set[['Keyword','Ad_group_name','Ad_group_number', 'Volume']] 
-        
-#         data_set.to_excel("./output"+ '/' + RESULT_FILE_NAME
-#                                 , index=False,) 
+    index_sol =  [np.where(list_distance==max(list_distance))[0][0] for list_distance in list_distances]
+    data_subset['test'] = np.array(index_sol)
+    return data_subset['test']
 
 # def parallelize(data, func, num_of_processes=12):
 #     data_split = np.array_split(data, num_of_processes)
