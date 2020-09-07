@@ -3,6 +3,10 @@ import numpy as np
 from numpy import dot
 from numpy.linalg import norm
 
+from fasttext import train_unsupervised
+from scipy.spatial import distance
+
+
 import re
 import os
 import io
@@ -10,13 +14,10 @@ import io
 import copy 
 import time
 from multiprocessing import Pool
-from fasttext import train_unsupervised
+
 from functools import partial
 import warnings
 import base64
-
-from scipy import spatial
-from scipy.spatial import distance
 # from text_processing import *
 
 
@@ -104,9 +105,9 @@ def cos_sim(a, b):
 
 def ad_group_assignment(data_subset):
 
-    list_distances = 1 - distance.cdist(data_subset['embedding_average'].tolist()
-                                            , ad_groups_clusters_centers['embedding_average'].tolist()
-                                                , 'cosine')
+    list_distances = 1 - distance.cdist(data_subset['embedding_average'].tolist(),
+                                        ad_groups_clusters_centers['embedding_average'].tolist(),
+                                        'cosine')
 
     index_sol =  [np.where(list_distance==max(list_distance))[0][0] for list_distance in list_distances]
     data_subset['test'] = np.array(index_sol)
