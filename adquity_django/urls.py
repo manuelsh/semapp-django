@@ -21,9 +21,8 @@ from semapp import views as semapp_views
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
-    #path('semapp/', include('semapp.urls')),
     path('admin/', admin.site.urls),
-#    path('', semapp_views.UploadView.as_view(), name='semapp'),
+    path('', semapp_views.build_adgroups, name='build_adgroups'),
     path('semapp/', include('semapp.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
     ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

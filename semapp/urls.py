@@ -6,5 +6,4 @@ from . import views
 urlpatterns = [
     path('adgroups', views.build_adgroups, name='build_adgroups'),
     path('autobuilder', views.autobuilder, name='autobuilder'),
-#    path('show', views.type_first_file, name='show'),
 ]
