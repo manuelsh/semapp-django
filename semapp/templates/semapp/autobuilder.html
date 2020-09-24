@@ -18,14 +18,12 @@
 <hr class="my-4">
 <p>Upload your keywords and adgroups in excel files. </p>
 <p>Each excel file should contain only one column with the keywords or the adgroups.</p>
-<div class="form-group">
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_ul }}
-        <br/>
-        <p><button type="submit" class="btn btn-primary">Submit</button></p>
-    </form>
-</div>
 
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_ul }}
+    <br/>
+    <p><button type="submit" class="btn btn-primary">Submit</button></p>
+</form>
 
 {% endblock %}

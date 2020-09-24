@@ -21,9 +21,7 @@ keyword.</p>
 <form method="post" enctype="multipart/form-data">
   {% csrf_token %}
   {{ form.as_ul }}
+  <p><button type="submit" class="btn btn-primary">Submit</button></p>
 </form>
 <br/>
-<p><button type="submit" class="btn btn-primary">Submit</button></p>
-
-
 {% endblock %}
