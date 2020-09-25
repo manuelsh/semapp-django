@@ -5,13 +5,11 @@ from .functions import create_model, pipeline, ad_group_assignment, create_embed
 def adgroups_builder(uploaded_file, 
                      similarity_clusters, 
                      number_of_clusters, 
-                     number_of_kw_per_adgroup,
-                     request):
-
+                     number_of_kw_per_adgroup):
+    info = {}
     kw_df = pd.read_excel(uploaded_file)
-    
-    request.session['file_size'] = len(kw_df)
-    
+    info['file_length'] = len(kw_df)
+      
     # lower case column titles
     kw_df.columns = [c.lower() for c in kw_df.columns]
     
@@ -33,7 +31,7 @@ def adgroups_builder(uploaded_file,
 
     # Train model
     model = create_model(kw_df[kw_column])
-    request.session['model_trained_adgroups'] = True
+    info['model_trained_adgroups'] = True
     
     # Create adgroups
     results_output , rest_df_output = pipeline(dataset = kw_df , kw_column=kw_column,
@@ -41,22 +39,23 @@ def adgroups_builder(uploaded_file,
                                                number_of_clusters = int(number_of_clusters),
                                                number_of_kw = int(number_of_kw_per_adgroup),
                                                create_embedding_dataset = True)
-    request.session['adgroups_created'] = True
+    info['adgroups_created'] = True
          
        
     # Prepare file to be downloaded
     results_output = results_output.drop(columns='embedding_average') 
     results_output.to_excel("./media/output_adgroup_build.xlsx", index = False,  encoding = 'UTF-16',sheet_name='adgroups') 
-    
-    return False, request
+    return info
 
 
-def autobuilder_func(kw_file, adgroups_file, kw_column, adgroups_column, kw_adgroups_column, request):
-
+def autobuilder_func(kw_file, adgroups_file, kw_column, adgroups_column, kw_adgroups_column):
+        info = {}
         # read & preprocess pandas
         adgroups_df = pd.read_excel(adgroups_file) 
         kw_df = pd.read_excel(kw_file) 
-        
+        info['adgroups_rows'] = len(adgroups_df)
+        info['kw_rows'] = len(kw_df)
+                                         
         # lower case column titles
         kw_df.columns = [c.lower() for c in kw_df.columns]
         adgroups_df.columns = [c.lower() for c in adgroups_df.columns]
@@ -77,12 +76,12 @@ def autobuilder_func(kw_file, adgroups_file, kw_column, adgroups_column, kw_adgr
         i2 = adgroups_df.set_index(kw_adgroups_column).index
         kw_df = kw_df[~i1.isin(i2)]
         if len(kw_df) == 0:
-            request.session['error'] = 'New keywords not found. Maybe the "new keywords file" is empty or contains the same keywords as the "ad groups file"?'
-            return True, request
+            info['error'] = 'New keywords not found. Maybe the "new keywords file" is empty or contains the same keywords as the "ad groups file"?'
+            return info
         # Creating model
         concat_all_kw = pd.concat([ adgroups_df[kw_adgroups_column], kw_df[kw_column] ])
         model = create_model(concat_all_kw)
-        request.session['model_trained_autobuilder'] = True
+        info['model_trained_autobuilder'] = True
 
         # Assigning cluster
         clusters_names = adgroups_df[adgroups_column].unique()
@@ -92,10 +91,10 @@ def autobuilder_func(kw_file, adgroups_file, kw_column, adgroups_column, kw_adgr
         clusters_names_df = create_embedding(clusters_names_df , 'ad_group', model)
         kw_df['index'] = ad_group_assignment(kw_df, clusters_names_df)
         kw_df['ad_group'] =  kw_df['index'].apply(lambda x: clusters_names_df['ad_group'][x] )
-        request.session['clusters_assigned'] = True
+        info['clusters_assigned'] = True
         
         # Prepare file to be downloaded
         results_output = kw_df.drop(columns='embedding_average') 
         results_output.to_excel("./media/output_autobuilder.xlsx", index = False,  encoding = 'UTF-16',sheet_name='adgroups') 
-
-        return False, request
+        info['file_saved'] = True
+        return info
