@@ -8,6 +8,22 @@ from django.forms.fields import JSONField
 from datetime import datetime
 import json
 
+# for download_file
+import os
+import mimetypes
+from django.http import StreamingHttpResponse
+from wsgiref.util import FileWrapper
+
+def download_file(request, file_name_raw):
+    filename = os.path.basename(file_name_raw)
+    chunk_size = 8192
+    response = StreamingHttpResponse(FileWrapper(open(file_name_raw, 'rb'), chunk_size),
+                           content_type=mimetypes.guess_type(file_name_raw)[0])
+    response['Content-Length'] = os.path.getsize(file_name_raw)    
+    response['Content-Disposition'] = "attachment; filename=%s" % filename
+    return response
+
+
 def clean_f(form):
     clean = form.cleaned_data.copy()
     keys_to_remove = []
@@ -17,6 +33,7 @@ def clean_f(form):
     for k in keys_to_remove:
         del clean[k]
     return clean
+
     
 @login_required  
 def build_adgroups(request):
@@ -28,8 +45,13 @@ def build_adgroups(request):
             info = adgroups_builder(uploaded_file = request.FILES['file'], 
                      similarity_clusters = form.cleaned_data['similarity_threshold'], 
                      number_of_clusters = form.cleaned_data['number_of_adgroups'], 
-                     number_of_kw_per_adgroup = form.cleaned_data['max_number_keywords'])
-            # todo: if adgroups_builder returns error retrieve it as an event and inform user
+                     number_of_kw_per_adgroup = form.cleaned_data['max_number_keywords'],
+                     kw_column =  form.cleaned_data['keyword_column'],
+                     volume_column =  form.cleaned_data['volume_column'])
+            
+            if 'error' in info:
+                Event(event_type='error', time=datetime.now(), user_name=request.user.username, origin=origin, info=info).save()
+                return HttpResponse(info['error'])
 
             # returns output
             filename = "./media/output_adgroup_build.xlsx"
@@ -38,7 +60,8 @@ def build_adgroups(request):
                   user_name=request.user.username, 
                   origin=origin, 
                   info=info.update(clean_f(form))).save()
-            return FileResponse(open(filename, 'rb'))
+            return download_file(request, filename)
+            #return FileResponse(open(filename, 'rb'))
             
     else:
         form = UploadFileFormAdgroup()

@@ -5,7 +5,7 @@ services:
     build:
        dockerfile: Dockerfile.prod
        context: .
-    command: gunicorn adquity_django.wsgi:application --bind 0.0.0.0:8000
+    command: gunicorn adquity_django.wsgi:application --bind 0.0.0.0:8000 --timeout 3600
     expose:
       - 8000
     env_file:

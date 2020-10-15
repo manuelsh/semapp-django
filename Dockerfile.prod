@@ -39,6 +39,12 @@ COPY --from=builder /usr/src/app/wheels /wheels
 COPY --from=builder /usr/src/app/requirements.txt .
 RUN pip install --no-cache /wheels/*
 
+# sp that the entrypoint can be found (see https://www.reddit.com/r/docker/comments/gx7x1x/nc_not_found_tried_aptget_netcat/)
+RUN apt-get update && apt-get install -y netcat
+
+# install postgress database linux
+# RUN apt-get install -y postgresql
+
 # copy entrypoint-prod.sh
 COPY ./entrypoint.prod.sh $APP_HOME
 
@@ -53,11 +59,6 @@ RUN usermod -a -G app_group app
 # chown all the files to the app user
 RUN chown -R app:app_group $APP_HOME
 
-# sp that the entrypoint can be found (see https://www.reddit.com/r/docker/comments/gx7x1x/nc_not_found_tried_aptget_netcat/)
-RUN apt-get update && apt-get install -y netcat
-
-# install postgress database linux
-RUN apt-get install -y postgresql
 
 # change to the app user
 USER app

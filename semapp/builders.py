@@ -1,20 +1,39 @@
 import pandas as pd
 
-from .functions import create_model, pipeline, ad_group_assignment, create_embedding
+from .functions import create_model, pipeline, ad_group_assignment, create_embedding, is_excel_file
 
 def adgroups_builder(uploaded_file, 
                      similarity_clusters, 
                      number_of_clusters, 
-                     number_of_kw_per_adgroup):
+                     number_of_kw_per_adgroup,
+                     kw_column,
+                     volume_column):
+    
     info = {}
+    
+    # check file is excel file
+    if not is_excel_file(uploaded_file):
+        info['error'] = 'Not a valid excel file'
+        return info
+    
+    # read file and check length    
     kw_df = pd.read_excel(uploaded_file)
     info['file_length'] = len(kw_df)
+    
+    # run checks
+    for c in [kw_column, volume_column]:
+        if c not in kw_df:
+            info['error'] = c+' column not in the file.'
+            return info
+    
+    if len(kw_df) == 0:
+        info['error'] = 'File is empty. No keywords found.'
+        return info
       
     # lower case column titles
     kw_df.columns = [c.lower() for c in kw_df.columns]
-    
-    kw_column = 'keyword'
-    volume_column = 'volume'
+    kw_column = kw_column.lower()
+    volume_column = volume_column.lower()
     
     # Some transformations
     kw_df = kw_df.astype({kw_column:"str"})
@@ -50,11 +69,35 @@ def adgroups_builder(uploaded_file,
 
 def autobuilder_func(kw_file, adgroups_file, kw_column, adgroups_column, kw_adgroups_column):
         info = {}
+            # check files are excel files
+        for uploaded_file in [kw_file, adgroups_file]:
+            if not is_excel_file(uploaded_file):
+                info['error'] = uploaded_file.name + ' is not a valid excel file.'
+                return info
+         
         # read & preprocess pandas
         adgroups_df = pd.read_excel(adgroups_file) 
         kw_df = pd.read_excel(kw_file) 
         info['adgroups_rows'] = len(adgroups_df)
         info['kw_rows'] = len(kw_df)
+        
+        # run checks
+        if kw_column not in kw_df:
+            info['error'] = kw_column+' column not in the keywords file.'
+            return info
+        
+        for c in [adgroups_column, kw_adgroups_column]:
+            if c not in adgroups_df:
+                info['error'] = c+' column not in the adgroups file.'
+                return info
+
+        if len(kw_df) == 0:
+            info['error'] = 'Keyword file is empty. No keywords found.'
+            return info
+        
+        if len(adgroups_df) == 0:
+            info['error'] = 'Ad groups file is empty. No adgroups found.'
+            return info
                                          
         # lower case column titles
         kw_df.columns = [c.lower() for c in kw_df.columns]

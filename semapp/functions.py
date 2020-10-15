@@ -113,6 +113,24 @@ def ad_group_assignment(data_subset, ad_groups_clusters_centers):
     data_subset['test'] = np.array(index_sol)
     return data_subset['test']
 
+    
+def is_excel_file(file):
+
+    excelSigs = [
+        ('xlsx', b'\x50\x4B\x05\x06', 2, -22, 4),
+        ('xls', b'\x09\x08\x10\x00\x00\x06\x05\x00', 0, 512, 8),  #Saved from Excel
+        ('xls', b'\x09\x08\x10\x00\x00\x06\x05\x00', 0, 1536, 8), #Saved from LibreOffice Calc
+        ('xls', b'\x09\x08\x10\x00\x00\x06\x05\x00', 0, 2048, 8)  #Saved from Excel then saved from Calc
+]
+
+    for sigType, sig, whence, offset, size in excelSigs:
+        file.seek(offset, whence)
+        bytes = file.read(size)
+        if bytes == sig:
+            return True
+
+    return False
+
 # def parallelize(data, func, num_of_processes=12):
 #     data_split = np.array_split(data, num_of_processes)
 #     pool = Pool(num_of_processes)
