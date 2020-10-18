@@ -19,7 +19,12 @@ def adgroups_builder(uploaded_file,
     # read file and check length    
     kw_df = pd.read_excel(uploaded_file)
     info['file_length'] = len(kw_df)
-    
+      
+    # lower case column titles
+    kw_df.columns = [c.lower() for c in kw_df.columns]
+    kw_column = kw_column.lower()
+    volume_column = volume_column.lower()
+     
     # run checks
     for c in [kw_column, volume_column]:
         if c not in kw_df:
@@ -29,11 +34,6 @@ def adgroups_builder(uploaded_file,
     if len(kw_df) == 0:
         info['error'] = 'File is empty. No keywords found.'
         return info
-      
-    # lower case column titles
-    kw_df.columns = [c.lower() for c in kw_df.columns]
-    kw_column = kw_column.lower()
-    volume_column = volume_column.lower()
     
     # Some transformations
     kw_df = kw_df.astype({kw_column:"str"})
@@ -81,6 +81,13 @@ def autobuilder_func(kw_file, adgroups_file, kw_column, adgroups_column, kw_adgr
         info['adgroups_rows'] = len(adgroups_df)
         info['kw_rows'] = len(kw_df)
         
+        # lower case column titles
+        kw_df.columns = [c.lower() for c in kw_df.columns]
+        adgroups_df.columns = [c.lower() for c in adgroups_df.columns]
+        kw_column = kw_column.lower()
+        adgroups_column = adgroups_column.lower()
+        kw_adgroups_column = kw_adgroups_column.lower()
+        
         # run checks
         if kw_column not in kw_df:
             info['error'] = kw_column+' column not in the keywords file.'
@@ -97,15 +104,7 @@ def autobuilder_func(kw_file, adgroups_file, kw_column, adgroups_column, kw_adgr
         
         if len(adgroups_df) == 0:
             info['error'] = 'Ad groups file is empty. No adgroups found.'
-            return info
-                                         
-        # lower case column titles
-        kw_df.columns = [c.lower() for c in kw_df.columns]
-        adgroups_df.columns = [c.lower() for c in adgroups_df.columns]
-        kw_column = kw_column.lower()
-        adgroups_column = adgroups_column.lower()
-        kw_adgroups_column = kw_adgroups_column.lower()
-        
+            return info  
         
         for column in adgroups_df.columns:
             adgroups_df = adgroups_df.astype({column:"str"})
