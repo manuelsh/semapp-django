@@ -1,0 +1,21 @@
+{% extends 'base.html'%}
+{% block content %}
+
+<title>Adquity - Download file</title>
+
+<ul class="nav nav-tabs" role="navigation" >
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'build_adgroups'%}">Ad groups builder</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'autobuilder'%}">Autobuilder</a>
+    </li>
+</ul>
+
+
+<h2  class="display-4"> Job finished! </h2>
+<p class="lead">The result is ready to be donwloaded.</p>
+<hr class="my-4">
+<p><a href="{{file_url}}" class="btn btn-primary">Download</a></p>
+
+{% endblock %}
