@@ -87,23 +87,13 @@ def build_adgroups(request):
             
             response = json.loads(info['Payload'].read())
             if 'error' in response:
-                Event(event_type='error', time=datetime.now(), user_name=request.user.username, origin=origin, info=info).save()
-                return HttpResponse(info['error'])
+                Event(event_type='error', time=datetime.now(), user_name=request.user.username, origin=origin, info=response).save()
+                return render(request, 'semapp/error_message.html', {'error': response['error']})
             
             http_bucket_address = 'https://adquity-app.s3-eu-west-1.amazonaws.com/'
             file_url = http_bucket_address+response['output_file_name']
             return render(request, 'semapp/download_file.html', {'file_url': file_url})
-
-            # returns output
-#             filename = "./media/output_adgroup_build.xlsx"
-#             Event(event_type='process', 
-#                   time=datetime.now(), 
-#                   user_name=request.user.username, 
-#                   origin=origin, 
-#                   info=info.update(clean_f(form))).save()
-#             return download_file(request, filename)
-
-            
+           
     else:
         form = UploadFileFormAdgroup()
         Event(event_type='view', time=datetime.now(), user_name=request.user.username, origin=origin).save()

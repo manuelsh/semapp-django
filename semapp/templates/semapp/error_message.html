@@ -1,0 +1,23 @@
+{% extends 'base.html'%}
+{% block content %}
+
+<title>Adquity - Error</title>
+
+<ul class="nav nav-tabs" role="navigation" >
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'build_adgroups'%}">Ad groups builder</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'autobuilder'%}">Autobuilder</a>
+    </li>
+</ul>
+
+
+<h2  class="display-4"> There was an error! </h2>
+<p class="lead">Error message:</p>
+<p>{{error}}</p>
+    
+<form>
+ <p><button type="submit" class="btn btn-primary" onclick="history.back()">Go back</button></p>
+</form>
+{% endblock %}
