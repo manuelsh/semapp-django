@@ -59,7 +59,6 @@ RUN usermod -a -G app_group app
 # chown all the files to the app user
 RUN chown -R app:app_group $APP_HOME
 
-
 # change to the app user
 USER app
 
