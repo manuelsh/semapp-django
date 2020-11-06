@@ -30,3 +30,12 @@ To build the layer you can run the script inside the `semapp/lambda_function/lay
 * AWS lambda functions
 * SSL Certificate: certbot, it updates automatically
 * Database: AWS Postgresql
+
+## Dev environment
+There is a dev environment where nginx, gunicorn and the certbot is disconnected.
+
+To run the dev environment use:
+
+`sudo docker-compose -f docker-compose.dev.yml up -d --build`
+
+Access to it directly to the IP of the machine, port 8000.
