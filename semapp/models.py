@@ -7,7 +7,8 @@ class Event(models.Model):
             ('view','view'),             # page view event
             ('submit','submit'),         # form submitted event
             ('process', 'process'),      # process done event (e.g. file created, process initiated)
-            ('error', 'error')           # error event
+            ('error', 'error'),           # some controlled error
+            ('exception','exception')     # an exception in the code
         ],
         default='view',
     )
