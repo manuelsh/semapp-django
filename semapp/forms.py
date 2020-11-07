@@ -22,7 +22,7 @@ class UploadFileFormAutoBuilder(forms.Form):
 #                               widget=forms.FileInput(attrs = {'class' : 'custom-control-file form-control-sm'}))
     
     new_keywords_column = forms.CharField(label="New keywords column", 
-                                          initial="Keywords", 
+                                          initial="Keyword", 
                                           help_text="Name of column containing the new keywords to add", )
 #                                           widget=forms.TextInput(attrs = {'class' : 'form-control form-control-sm'}) )
     file_adgroups = forms.FileField(label="Ad groups file", 

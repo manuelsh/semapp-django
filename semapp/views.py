@@ -16,8 +16,10 @@ import mimetypes
 from django.http import StreamingHttpResponse
 from wsgiref.util import FileWrapper
 
-from .lambda_function.builders import adgroups_builder, autobuilder_func
+#from .lambda_function.builders import autobuilder_func
 
+BUCKET = os.environ.get("S3_BUCKET")
+HTTP_S3_BUCKET_ADDRESS = f'https://{BUCKET}.s3-eu-west-1.amazonaws.com/'
 
 def download_file(request, file_name_raw):
     filename = os.path.basename(file_name_raw)
@@ -39,7 +41,16 @@ def clean_f(form):
         del clean[k]
     return clean
 
+def run_lambda_function(payload):
+    lambda_func = boto3.client('lambda',
+                              aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
+                              aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+                              region_name=os.environ.get('REGION_NAME')
+                             )
+    info = lambda_func.invoke(FunctionName='builders', Payload = payload)
+    return info
     
+
 @login_required  
 def build_adgroups(request):
     origin = 'build_adgroups_view'
@@ -58,14 +69,10 @@ def build_adgroups(request):
                       aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
                       region_name=os.environ.get('REGION_NAME')
                      )
-            s3.put_object( Body=request.FILES['file'].file, Bucket='adquity-app', Key=file_name_s3)
+            s3.put_object( Body=request.FILES['file'].file, Bucket=BUCKET, Key=file_name_s3)
             
             # run lambda function
-            lambda_func = boto3.client('lambda',
-                      aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
-                      aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
-                      region_name=os.environ.get('REGION_NAME')
-                     )
+
             payload = f"""{{"file_name_s3":"{file_name_s3}",
                             "similarity_clusters":"{form.cleaned_data['similarity_threshold']}", 
                             "number_of_clusters":"{form.cleaned_data['number_of_adgroups']}",
@@ -74,11 +81,9 @@ def build_adgroups(request):
                             "volume_column":"{form.cleaned_data['volume_column']}",
                             "action":"build_adgroups"
                             }}"""
+            info = run_lambda_function(payload)
             
-            
-            info = lambda_func.invoke(FunctionName='builders', Payload = payload)
-
-#             info = adgroups_builder(file_name_s3 = file_name_s3, 
+#           info = adgroups_builder(file_name_s3 = file_name_s3, 
 #                                     similarity_clusters = form.cleaned_data['similarity_threshold'], 
 #                                     number_of_clusters = form.cleaned_data['number_of_adgroups'], 
 #                                     number_of_kw_per_adgroup = form.cleaned_data['max_number_keywords'],
@@ -90,8 +95,8 @@ def build_adgroups(request):
                 Event(event_type='error', time=datetime.now(), user_name=request.user.username, origin=origin, info=response).save()
                 return render(request, 'semapp/error_message.html', {'error': response['error']})
             
-            http_bucket_address = 'https://adquity-app.s3-eu-west-1.amazonaws.com/'
-            file_url = http_bucket_address+response['output_file_name']
+            file_url = HTTP_S3_BUCKET_ADDRESS + response['output_file_name']
+            Event(event_type='process', time=datetime.now(), user_name=request.user.username, origin=origin, info=response).save()
             return render(request, 'semapp/download_file.html', {'file_url': file_url})
            
     else:
@@ -107,21 +112,45 @@ def autobuilder(request):
         form = UploadFileFormAutoBuilder(request.POST, request.FILES)       
         if form.is_valid():
             Event(event_type='submit', time=datetime.now(), user_name=request.user.username, origin=origin, info=clean_f(form)).save()
-                       
-            info = autobuilder_func(kw_file=request.FILES['file_kw'], 
-                                  adgroups_file=request.FILES['file_adgroups'], 
-                                  kw_column=form.cleaned_data['new_keywords_column'], 
-                                  adgroups_column=form.cleaned_data['adgroups_column'],
-                                  kw_adgroups_column=form.cleaned_data['prev_keywords_column'])
-            if 'error' in info:
-                Event(event_type='error', time=datetime.now(), user_name=request.user.username, origin=origin, info=info).save()
-                return HttpResponse(info['error'])
-            else:            
+            
+            # Save files to S3 with a proper s3 name without punctuation
+            s3 = boto3.client('s3',
+                      aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
+                      aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+                      region_name=os.environ.get('REGION_NAME')
+                     )
+            file_name_s3 = (request.user.username+str(datetime.now())).translate(str.maketrans('', '', string.punctuation+' ')) 
+            adgroups_file_name = file_name_s3 + 'adgroups.xlsx'
+            kw_file_name = file_name_s3 + 'kw.xlsx'
+            s3.put_object( Body=request.FILES['file_adgroups'].file, Bucket=BUCKET, Key=adgroups_file_name)
+            s3.put_object( Body=request.FILES['file_kw'].file, Bucket=BUCKET, Key=kw_file_name)
+            
+            # Define payload and run lambda function
+            payload = f"""{{"kw_file_name":"{kw_file_name}",
+                "adgroups_file_name":"{adgroups_file_name}", 
+                "kw_column":"{form.cleaned_data['new_keywords_column']}",
+                "adgroups_column":"{form.cleaned_data['adgroups_column']}",
+                "kw_adgroups_column":"{form.cleaned_data['prev_keywords_column']}",
+                "action":"autobuilder"
+                }}"""
+            info = run_lambda_function(payload)
+            response = json.loads(info['Payload'].read())
+            
+#             info = autobuilder_func(kw_file=request.FILES['file_kw'], 
+#                                   adgroups_file=request.FILES['file_adgroups'], 
+#                                   kw_column=form.cleaned_data['new_keywords_column'], 
+#                                   adgroups_column=form.cleaned_data['adgroups_column'],
+#                                   kw_adgroups_column=form.cleaned_data['prev_keywords_column'])
 
-                # returns output
-                filename = "./media/output_autobuilder.xlsx"
-                Event(event_type='process', time=datetime.now(), user_name=request.user.username, origin=origin, info=info).save()
-                return FileResponse(open(filename, 'rb'))
+
+            if 'error' in response:
+                Event(event_type='error', time=datetime.now(), user_name=request.user.username, origin=origin, info=response).save()
+                return render(request, 'semapp/error_message.html', {'error': response['error']})           
+
+            file_url = HTTP_S3_BUCKET_ADDRESS + response['output_file_name']
+            Event(event_type='process', time=datetime.now(), user_name=request.user.username, origin=origin, info=response).save()
+            return render(request, 'semapp/download_file.html', {'file_url': file_url})
+
             
     else:
         form = UploadFileFormAutoBuilder()

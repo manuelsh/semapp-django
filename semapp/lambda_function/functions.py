@@ -21,9 +21,9 @@ import base64
 
 
 def create_model(series):
-    with open('/temp/output.txt', 'w') as f:
+    with open('/tmp/output.txt', 'w') as f:
         f.write(series.str.cat(sep='\n'))
-    model = train_unsupervised('/temp/output.txt', epoch = 1000 )
+    model = train_unsupervised('/tmp/output.txt', epoch = 1000 )
     return model
 
 def pipeline(dataset, model, kw_column,

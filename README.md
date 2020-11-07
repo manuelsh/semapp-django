@@ -18,9 +18,9 @@ Based on https://testdriven.io/blog/dockerizing-django-with-postgres-gunicorn-an
 ## Lambda function
 The code requires a lambda function with python3.8 environment to be created in amazon aws called `builders`.
 
-Find the code in the directory `semapp/lambda_function`. To upload the code to the funcion, once access is granted, run the `send_code.sh` script.
+Find the code in the directory `semapp/lambda_function`. To upload the code to the lambda function in AWS, once access to the AWS CLI is configured, run the `send_code.sh` script.
 
-To build the layer you can run the script inside the `semapp/lambda_function/layers` directory.
+To build the layer you can run the script inside the `semapp/lambda_function/layers` directory. Short instructions are contained in that file.
 
 ## Stack
 
