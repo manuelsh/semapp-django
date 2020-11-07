@@ -15,9 +15,8 @@
 <p class="lead">Use the ad groups builder to automatically group a large set of keywords.</p>
 <hr class="my-4">
 <p>Upload your excel file and select your options to autogenerate ad groups. </p>
-<p>The excel file should contain two columns, one named 'keyword', with the 
-list of keywords, and another  named 'volume' with the volume of the corresponding
-keyword.</p>
+<p>The excel file should contain two columns, one with the keywords, and another  
+    with the volume of the corresponding keyword.</p>
 <form method="post" enctype="multipart/form-data">
   {% csrf_token %}
   {{ form.as_ul }}
