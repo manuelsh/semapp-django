@@ -1,4 +1,8 @@
 # Sem app
+Current webapp automates the creation of Search Engine Marketing campaigns in Google Ads by helping creating ad groups.
+
+It uses word embeddings to automaticaally build ad groups, and allows to manage campaigns of over million words.
+
 Based on https://testdriven.io/blog/dockerizing-django-with-postgres-gunicorn-and-nginx/
 
 ## Requirements to run in production
