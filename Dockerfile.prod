@@ -3,7 +3,7 @@
 ###########
 
 # pull official base image
-FROM python:3.8.3 as builder
+FROM python:3.12.13-slim-bookworm AS builder
 
 # set work directory
 WORKDIR /usr/src/app
@@ -22,7 +22,7 @@ RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requir
 #########
 
 # pull official base image
-FROM python:3.8.3
+FROM python:3.12.13-slim-bookworm
 
 # create directory for the app user
 RUN mkdir -p /home/app
@@ -40,7 +40,9 @@ COPY --from=builder /usr/src/app/requirements.txt .
 RUN pip install --no-cache /wheels/*
 
 # sp that the entrypoint can be found (see https://www.reddit.com/r/docker/comments/gx7x1x/nc_not_found_tried_aptget_netcat/)
-RUN apt-get update && apt-get install -y netcat
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends netcat-openbsd \
+    && rm -rf /var/lib/apt/lists/*
 
 # install postgress database linux
 # RUN apt-get install -y postgresql
